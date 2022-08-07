@@ -3,6 +3,7 @@ import logging
 import curses
 import signal
 import sys
+import math
 from abc import ABC, abstractmethod
 
 logging.basicConfig(level = logging.WARN)
@@ -28,13 +29,13 @@ class LeetTimer:
         if self.last_pause_start_time is not None:
             current_pause = instant - self.last_pause_start_time
 
-        return round(instant - self.start_time - self.pause_time - current_pause)
+        return math.floor(instant - self.start_time - self.pause_time - current_pause)
     
     def get_elapsed_time_all_fmts(self):
         delta_time = self.get_elapsed_time_seconds()
-        sec_elapsed = round(delta_time)
-        min_elapsed = round(delta_time/60)
-        hr_elapsed = round(delta_time/3600)
+        sec_elapsed = math.floor(delta_time)
+        min_elapsed = math.floor(delta_time/60)
+        hr_elapsed = math.floor(delta_time/3600)
 
         return hr_elapsed, min_elapsed, sec_elapsed
     
@@ -95,7 +96,7 @@ class PausedState(TimerState):
         logger.info("Paused -> Running")
         if self.timer.last_pause_start_time is None:
             raise RuntimeError("Invalid state transition. Pause start time is None")
-        current_pause = round(time.time() - self.timer.last_pause_start_time)
+        current_pause = math.floor(time.time() - self.timer.last_pause_start_time)
         self.timer.pause_time = self.timer.pause_time + current_pause
         logger.info(f"Current pause : {current_pause}")
         self.timer.last_pause_start_time = None
@@ -105,7 +106,7 @@ class PausedState(TimerState):
         logger.info("Paused -> Stopped")
         if self.timer.last_pause_start_time is None:
             raise RuntimeError("Invalid state transition. Pause start time is None")
-        current_pause = round(time.time() - self.timer.last_pause_start_time)
+        current_pause = math.floor(time.time() - self.timer.last_pause_start_time)
         self.timer.pause_time = self.timer.pause_time + current_pause
         logger.info(f"Current pause : {current_pause}")
         self.timer.last_pause_start_time = None
@@ -157,10 +158,10 @@ def screen_handler(stdscr):
     i = 0
     total_time_seconds = 0
     while i < len(timers_list):
-        stdscr.addstr(i, 1, f"Timer: {i+1} time elapsed: {round(timers_list[i]/60)} minutes")
+        stdscr.addstr(i, 1, f"Timer: {i+1} time elapsed: {math.floor(timers_list[i]/60)} minutes")
         total_time_seconds = total_time_seconds + timers_list[i]
         i = i+1
-    stdscr.addstr(i, 1, f"Total time spent: {round(total_time_seconds/60)} minutes")
+    stdscr.addstr(i, 1, f"Total time spent: {math.floor(total_time_seconds/60)} minutes")
     stdscr.addstr(i+1, 1, f"Press any key to exit")
     stdscr.refresh()
     stdscr.getch()
